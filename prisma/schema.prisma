@@ -80,6 +80,7 @@ model Rating {
 model Report {
   id     String       @id @default(uuid())
   reason String
+  isReport Boolean @default(false) @map("is_report")
   status ReportStatus @default(APPROVED)
 
   createdAt  DateTime  @default(now()) @map("created_at")

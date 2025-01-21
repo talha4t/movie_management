@@ -41,7 +41,6 @@ export class AuthService {
                     user.role,
                 );
 
-                // Update refresh token within the same transaction
                 const hashedRefreshToken = await argon.hash(
                     tokens.refreshToken,
                 );
@@ -129,7 +128,7 @@ export class AuthService {
                 },
                 {
                     secret: process.env.JWT_SECRET,
-                    expiresIn: '15m',
+                    expiresIn: process.env.JWT_EXPIRES_IN,
                 },
             ),
             this.jwtService.signAsync(
@@ -140,7 +139,7 @@ export class AuthService {
                 },
                 {
                     secret: process.env.JWT_REFRESH_SECRET,
-                    expiresIn: '7d',
+                    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
                 },
             ),
         ]);
