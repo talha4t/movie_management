@@ -105,11 +105,11 @@ pnpm -v
         "email": "string",
         "password": "string"
     } 
-    or 
+    // or 
     {   "email": "talha4tofficial@gmail.com",
         "password": "password"
     }
-    it will give you the ADMIN access
+    // it will give you the ADMIN access
     ```
 - **Response**:
     ```json
