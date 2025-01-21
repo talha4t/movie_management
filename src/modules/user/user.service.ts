@@ -109,7 +109,25 @@ export class UserService {
                     },
                 });
 
-                await this.updateMovieAvgRating(movieId);
+                const ratings = await tx.rating.findMany({
+                    where: { movieId },
+                });
+
+                const totalRatings = ratings.length;
+                const sumOfRatings = ratings.reduce(
+                    (sum, rating) => sum + rating.value,
+                    0,
+                );
+                const avgRating =
+                    totalRatings > 0 ? sumOfRatings / totalRatings : 0;
+
+                await tx.movie.update({
+                    where: { id: movieId },
+                    data: {
+                        avgRating,
+                        totalRating: totalRatings,
+                    },
+                });
 
                 return await tx.rating.findUnique({
                     where: { id: rating.id },

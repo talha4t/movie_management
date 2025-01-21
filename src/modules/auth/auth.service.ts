@@ -59,7 +59,6 @@ export class AuthService {
                     tokens,
                 };
             } catch (error) {
-                console.log('error', error);
                 throw new BadRequestException(error, 'Failed to register user');
             }
         });
