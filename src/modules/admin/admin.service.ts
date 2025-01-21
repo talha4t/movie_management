@@ -8,49 +8,61 @@ export class AdminService {
     constructor(private readonly prisma: PrismaService) {}
 
     async getAllReportedMovies() {
-        return await this.prisma.report.findMany({
-            select: {
-                id: true,
-                reason: true,
-                status: true,
-                createdAt: true,
-                movie: {
-                    select: {
-                        id: true,
-                        title: true,
-                        avgRating: true,
-                        totalRating: true,
+        try {
+            return await this.prisma.report.findMany({
+                select: {
+                    id: true,
+                    reason: true,
+                    status: true,
+                    createdAt: true,
+                    movie: {
+                        select: {
+                            id: true,
+                            title: true,
+                            avgRating: true,
+                            totalRating: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                        },
                     },
                 },
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
-                    },
-                },
-            },
-        });
+            });
+        } catch (error) {
+            throw new Error(
+                `Failed to get all reported movies: ${error.message}`,
+            );
+        }
     }
 
     async getReportedMovieById(reportId: string) {
-        const report = await this.prisma.report.findUnique({
-            where: { id: reportId },
-            include: {
-                movie: true,
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
+        try {
+            const report = await this.prisma.report.findUnique({
+                where: { id: reportId },
+                include: {
+                    movie: true,
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                        },
                     },
                 },
-            },
-        });
+            });
 
-        if (!report) {
-            throw new NotFoundException('Reported movie not found');
+            if (!report) {
+                throw new NotFoundException('Reported movie not found');
+            }
+
+            return report;
+        } catch (error) {
+            throw new Error(
+                `Failed to get reported movie by ID: ${error.message}`,
+            );
         }
-
-        return report;
     }
 
     async updateReportStatus(
@@ -80,18 +92,26 @@ export class AdminService {
     }
 
     async deleteReportedMovie(reportId: string) {
-        const report = await this.prisma.report.findUnique({
-            where: { id: reportId },
-        });
+        try {
+            const report = await this.prisma.report.findUnique({
+                where: { id: reportId },
+            });
 
-        if (!report) {
-            throw new NotFoundException('Reported movie not found');
+            if (!report) {
+                throw new NotFoundException('Reported movie not found');
+            }
+
+            await this.prisma.movie.delete({
+                where: { id: report.movieId },
+            });
+
+            return {
+                message: 'Movie and associated report deleted successfully',
+            };
+        } catch (error) {
+            throw new Error(
+                `Failed to delete reported movie: ${error.message}`,
+            );
         }
-
-        await this.prisma.movie.delete({
-            where: { id: report.movieId },
-        });
-
-        return { message: 'Movie and associated report deleted successfully' };
     }
 }

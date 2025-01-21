@@ -22,7 +22,7 @@ export class UserService {
                 },
             });
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to create movie: ${error.message}`);
         }
     }
 
@@ -54,7 +54,7 @@ export class UserService {
                 },
             });
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to update movie: ${error.message}`);
         }
     }
 
@@ -74,7 +74,7 @@ export class UserService {
 
             return movie;
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to get movie by ID: ${error.message}`);
         }
     }
 
@@ -90,7 +90,7 @@ export class UserService {
                 },
             });
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to get all movies: ${error.message}`);
         }
     }
 
@@ -143,7 +143,7 @@ export class UserService {
                 });
             });
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to create rating: ${error.message}`);
         }
     }
 
@@ -167,7 +167,25 @@ export class UserService {
                     data: { value: updateRatingDto.value },
                 });
 
-                await this.updateMovieAvgRating(movieId);
+                const ratings = await tx.rating.findMany({
+                    where: { movieId },
+                });
+
+                const totalRatings = ratings.length;
+                const sumOfRatings = ratings.reduce(
+                    (sum, rating) => sum + rating.value,
+                    0,
+                );
+                const avgRating =
+                    totalRatings > 0 ? sumOfRatings / totalRatings : 0;
+
+                await tx.movie.update({
+                    where: { id: movieId },
+                    data: {
+                        avgRating,
+                        totalRating: totalRatings,
+                    },
+                });
 
                 return await tx.rating.findUnique({
                     where: { id: updatedRating.id },
@@ -183,7 +201,7 @@ export class UserService {
                 });
             });
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to update rating: ${error.message}`);
         }
     }
 
@@ -205,36 +223,7 @@ export class UserService {
 
             return report;
         } catch (error) {
-            throw error;
-        }
-    }
-
-    private async updateMovieAvgRating(movieId: string) {
-        try {
-            await this.prisma.$transaction(async tx => {
-                const ratings = await tx.rating.findMany({
-                    where: { movieId },
-                });
-
-                const totalRatings = ratings.length;
-                const sumOfRatings = ratings.reduce(
-                    (sum, rating) => sum + rating.value,
-                    0,
-                );
-
-                const avgRating =
-                    totalRatings > 0 ? sumOfRatings / totalRatings : 0;
-
-                await tx.movie.update({
-                    where: { id: movieId },
-                    data: {
-                        avgRating,
-                        totalRating: totalRatings,
-                    },
-                });
-            });
-        } catch (error) {
-            throw error;
+            throw new Error(`Failed to report movie: ${error.message}`);
         }
     }
 }
