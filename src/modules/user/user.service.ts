@@ -101,7 +101,6 @@ export class UserService {
     ) {
         try {
             return await this.prisma.$transaction(async tx => {
-                // Create the rating
                 const rating = await tx.rating.create({
                     data: {
                         value: createRatingDto.value,
@@ -110,10 +109,8 @@ export class UserService {
                     },
                 });
 
-                // Update average rating using your existing function
                 await this.updateMovieAvgRating(movieId);
 
-                // Return rating with the updated movie info
                 return await tx.rating.findUnique({
                     where: { id: rating.id },
                     include: {
@@ -183,7 +180,6 @@ export class UserService {
             const report = await this.prisma.report.create({
                 data: {
                     reason,
-                    isReport: true,
                     userId,
                     movieId,
                 },
