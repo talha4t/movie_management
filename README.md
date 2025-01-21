@@ -1,6 +1,6 @@
 # Movie Management System
 
-It's a Movie Management Backend Application (APIs)
+It's a Movie Management Backend Application with RESTful APIS in MVC pattern
 
 ## Notes
 
