@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReportStatus {
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      Role @default(USER)
+  refreshToken String?
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  movies  Movie[]
+  ratings Rating[]
+  reports Report[]
+
+  @@map("users")
+}
+
+model Movie {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  releasedAt  DateTime @map("released_at")
+  duration    Int
+  genre       String
+  language    String
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+
+  ratings   Rating[]
+  reports   Report[]
+
+  avgRating   Float @default(0) @map("avg_rating")
+  totalRating Int   @default(0) @map("total_rating")
+
+  @@map("movies")
+}
+
+model Rating {
+  id    String @id @default(uuid())
+  value Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String @map("user_id")
+  
+  movie   Movie  @relation(fields: [movieId], references: [id])
+  movieId String @map("movie_id")
+
+  @@unique([userId, movieId])
+
+  @@map("ratings")
+}
+
+model Report {
+  id     String       @id @default(uuid())
+  reason String
+  status ReportStatus @default(APPROVED)
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String @map("user_id")
+
+  movie   Movie  @relation(fields: [movieId], references: [id])
+  movieId String @map("movie_id")
+
+  @@map("reports")
+}
