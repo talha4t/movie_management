@@ -50,6 +50,13 @@ pnpm -v
     ```
 
     Edit `.env` to configure your database and other settings.
+4. **Set Up Database**
+
+    ```bash
+    npx prisma migrate dev --name init
+    pnpm prisma generate
+    pnpm prisma db seed  # Optional: Add sample data
+    ```
 
 ### Development
 
